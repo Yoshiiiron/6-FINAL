@@ -56,7 +56,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func postTasks(w http.ResponseWriter, r *http.Request) {
+func postTask(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	var buf bytes.Buffer
 
@@ -67,6 +67,12 @@ func postTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, ok = tasks[task.ID]
+	if ok {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -120,8 +126,8 @@ func main() {
 	r := chi.NewRouter()
 	// здесь регистрируйте ваши обработчики
 	r.Get("/tasks", getTasks)
-	r.Post("/tasks", postTasks)
-	r.Get("/task/{id}", getTask)
+	r.Post("/tasks", postTask)
+	r.Get("/tasks/{id}", getTask)
 	r.Delete("/tasks/{id}", deleteTask)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
